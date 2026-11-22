@@ -5,6 +5,8 @@ resources:
   - namespace.yaml
   - sealed-secrets-controller.yaml
   - otel-collector.yaml
+  - minio.yaml
+  - minio-sealed-secret.yaml
 
 configMapGenerator:
   - name: otel-collector-config
