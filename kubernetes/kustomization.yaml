@@ -4,29 +4,41 @@ kind: Kustomization
 resources:
   - namespaces/observex-namespace.yaml
 
+  # Sealed application secrets
+  - secrets/mongodb-sealed-secret.yaml
+  - secrets/backend-sealed-secret.yaml
+
+  # MongoDB
   - applications/mongodb/pvc.yaml
   - applications/mongodb/service.yaml
   - applications/mongodb/statefulset.yaml
 
+  # Backend
   - applications/backend/configmap.yaml
   - applications/backend/service.yaml
   - applications/backend/deployment.yaml
 
+  # Frontend
   - applications/frontend/configmap.yaml
   - applications/frontend/service.yaml
   - applications/frontend/deployment.yaml
 
+  # Ingress
   - ingress/ingress.yaml
 
+  # Resource management
   - resources/resource-quota.yaml
   - resources/limit-range.yaml
   - resources/pod-disruption-budget.yaml
 
+  # Autoscaling
   - autoscaling/frontend-hpa.yaml
   - autoscaling/backend-hpa.yaml
 
+  # RBAC
   - rbac/observex-rbac.yaml
 
+  # Network policies
   - network-policies/frontend-policy.yaml
   - network-policies/backend-policy.yaml
   - network-policies/mongodb-policy.yaml
