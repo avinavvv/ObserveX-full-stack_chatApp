@@ -1,0 +1,57 @@
+alertmanager:
+  enabled: true
+
+serverFiles:
+  alerting_rules.yml:
+    groups:
+      - name: kubernetes-pod-failure-alerts
+        rules:
+          - alert: KubernetesPodCrashLooping
+            expr: kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff"} == 1
+            for: 1m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Pod {{ $labels.pod }} is in CrashLoopBackOff"
+              description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is repeatedly crashing."
+
+          - alert: KubernetesImagePullFailure
+            expr: kube_pod_container_status_waiting_reason{reason=~"ImagePullBackOff|ErrImagePull"} == 1
+            for: 1m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Image pull failed for pod {{ $labels.pod }}"
+              description: "Container {{ $labels.container }} in namespace {{ $labels.namespace }} cannot pull its image."
+
+          - alert: KubernetesPodPending
+            expr: kube_pod_status_phase{phase="Pending"} == 1
+            for: 1m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Pod {{ $labels.pod }} is stuck Pending"
+              description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has remained Pending."
+
+          - alert: KubernetesContainerOOMKilled
+            expr: kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} == 1
+            for: 0m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Container {{ $labels.container }} was OOMKilled"
+              description: "Container in pod {{ $labels.pod }} in namespace {{ $labels.namespace }} was terminated due to memory exhaustion."
+
+      - name: kubernetes-resource-alerts
+        rules:
+          - alert: KubernetesContainerHighCPU
+            expr: |
+              100 * sum by (namespace, pod, container) (
+                rate(container_cpu_usage_seconds_total{container!="",container!="POD"}[5m])
+              ) > 80
+            for: 1m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Container {{ $labels.container }} has high CPU usage"
+              description: "Container in pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has CPU usage above 80% of one CPU core."

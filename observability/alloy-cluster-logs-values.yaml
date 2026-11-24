@@ -1,0 +1,17 @@
+controller:
+  type: deployment
+  replicas: 1
+rbac:
+  create: true
+serviceAccount:
+  create: true
+alloy:
+  configMap:
+    create: true
+    content: "logging {\n  level = \"info\"\n  format = \"logfmt\"\n}\n\ndiscovery.kubernetes\
+      \ \"pods\" {\n  role = \"pod\"\n}\n\nloki.source.kubernetes \"pods\" {\n  targets\
+      \    = discovery.kubernetes.pods.targets\n  forward_to = [loki.write.default.receiver]\n\
+      }\n\nloki.source.kubernetes_events \"cluster_events\" {\n  job_name   = \"integrations/kubernetes/events\"\
+      \n  log_format = \"logfmt\"\n  forward_to = [loki.write.default.receiver]\n\
+      }\n\nloki.write \"default\" {\n  endpoint {\n    url = \"http://observex-loki.observability.svc.cluster.local:3100/loki/api/v1/push\"\
+      \n  }\n}\n"

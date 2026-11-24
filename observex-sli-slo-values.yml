@@ -1,0 +1,67 @@
+serverFiles:
+  recording_rules.yml:
+    groups:
+      - name: observex-sli-slo
+        interval: 30s
+        rules:
+          - record: observex:availability_sli:5m
+            expr: |
+              100 * (1 - (
+                (sum(increase(observex_observex_http_requests_total{exported_job="observex-backend",http_response_status_code=~"5.."}[5m])) or vector(0))
+                /
+                sum(increase(observex_observex_http_requests_total{exported_job="observex-backend"}[5m]))
+              ))
+
+          - record: observex:availability_sli:7d
+            expr: |
+              100 * (1 - (
+                (sum(increase(observex_observex_http_requests_total{exported_job="observex-backend",http_response_status_code=~"5.."}[7d])) or vector(0))
+                /
+                sum(increase(observex_observex_http_requests_total{exported_job="observex-backend"}[7d]))
+              ))
+
+          - record: observex:error_rate_sli:5m
+            expr: |
+              100 *
+              (sum(increase(observex_observex_http_requests_total{exported_job="observex-backend",http_response_status_code=~"5.."}[5m])) or vector(0))
+              /
+              sum(increase(observex_observex_http_requests_total{exported_job="observex-backend"}[5m]))
+
+          - record: observex:error_rate_sli:7d
+            expr: |
+              100 *
+              (sum(increase(observex_observex_http_requests_total{exported_job="observex-backend",http_response_status_code=~"5.."}[7d])) or vector(0))
+              /
+              sum(increase(observex_observex_http_requests_total{exported_job="observex-backend"}[7d]))
+
+          - record: observex:latency_sli:5m
+            expr: |
+              100 *
+              sum(increase(observex_observex_http_request_duration_ms_milliseconds_bucket{exported_job="observex-backend",le="500.0"}[5m]))
+              /
+              sum(increase(observex_observex_http_request_duration_ms_milliseconds_count{exported_job="observex-backend"}[5m]))
+
+          - record: observex:latency_sli:7d
+            expr: |
+              100 *
+              sum(increase(observex_observex_http_request_duration_ms_milliseconds_bucket{exported_job="observex-backend",le="500.0"}[7d]))
+              /
+              sum(increase(observex_observex_http_request_duration_ms_milliseconds_count{exported_job="observex-backend"}[7d]))
+
+          - record: observex:availability_slo:target
+            expr: vector(99.9)
+
+          - record: observex:error_rate_slo:target
+            expr: vector(0.1)
+
+          - record: observex:latency_slo:target
+            expr: vector(95)
+
+          - record: observex:availability_error_budget:remaining_percent
+            expr: 100 * (1 - ((100 - observex:availability_sli:7d) / 0.1))
+
+          - record: observex:error_rate_error_budget:remaining_percent
+            expr: 100 * (1 - (observex:error_rate_sli:7d / 0.1))
+
+          - record: observex:latency_error_budget:remaining_percent
+            expr: 100 * (1 - ((100 - observex:latency_sli:7d) / 5))

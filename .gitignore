@@ -25,3 +25,16 @@ dist-ssr
 .env
 # Generated incident reports
 reports/
+
+# Downloaded binaries and local backups
+/kubectl
+/kubectl.sha256
+/node
+/backend/node
+/backend/backend@1.0.0
+/backend@1.0.0
+/velero-v1.17.0-linux-amd64/
+/velero-v1.17.0-linux-amd64.tar.gz
+*.bak
+*.backup
+/slack-alertmanager-values.yml
